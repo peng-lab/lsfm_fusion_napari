@@ -1,6 +1,14 @@
-
-from qtpy.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel, QPushButton, QComboBox, QGroupBox
+from qtpy.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QGridLayout,
+    QLabel,
+    QPushButton,
+    QComboBox,
+    QGroupBox,
+)
 import napari
+
 
 class GuidedDialog(QWidget):
     def __init__(self, parent=None):
@@ -37,10 +45,18 @@ class GuidedDialog(QWidget):
         # Labels
         label_prompt_type = QLabel("Select the type of fusion:")
         label_prompt_amount = QLabel("Select the amount of images to fuse:")
-        label_prompt_image1 = QLabel("Select the first back camera image:")
-        label_prompt_image2 = QLabel("Select the second back camera image:")
-        label_prompt_image3 = QLabel("Select the first front camera image:")
-        label_prompt_image4 = QLabel("Select the second front camera image:")
+        label_prompt_image1 = QLabel(
+            "Select the first image from camera front:"
+        )
+        label_prompt_image2 = QLabel(
+            "Select the second image from camera front:"
+        )
+        label_prompt_image3 = QLabel(
+            "Select the first image from camera back:"
+        )
+        label_prompt_image4 = QLabel(
+            "Select the second image from caemra back:"
+        )
         label_direction1 = QLabel("Direction:")
         label_direction2 = QLabel("Direction:")
         label_direction3 = QLabel("Direction:")
@@ -103,7 +119,7 @@ class GuidedDialog(QWidget):
         gb_type_layout.addWidget(button_illumination, 0, 1)
         gb_type_layout.addWidget(button_detection, 0, 2)
         self.groupbox_type.setLayout(gb_type_layout)
-        
+
         self.groupbox_amount = QGroupBox("Amount of images")
         gb_amount_layout = QGridLayout()
         gb_amount_layout.addWidget(label_prompt_amount, 0, 0)
@@ -112,7 +128,7 @@ class GuidedDialog(QWidget):
         self.groupbox_amount.setLayout(gb_amount_layout)
         self.groupbox_amount.setVisible(False)
 
-        self.groupbox_image1 = QGroupBox("Front camera image 1")
+        self.groupbox_image1 = QGroupBox("Image 1 (camera front)")
         gb_img1_layout = QGridLayout()
         gb_img1_layout.addWidget(label_prompt_image1, 0, 0)
         gb_img1_layout.addWidget(self.combobox_image1, 0, 1)
@@ -121,7 +137,7 @@ class GuidedDialog(QWidget):
         self.groupbox_image1.setLayout(gb_img1_layout)
         self.groupbox_image1.setVisible(False)
 
-        self.groupbox_image2 = QGroupBox("Front camera image 2")
+        self.groupbox_image2 = QGroupBox("Image 2 (camera front)")
         gb_img2_layout = QGridLayout()
         gb_img2_layout.addWidget(label_prompt_image2, 0, 0)
         gb_img2_layout.addWidget(self.combobox_image2, 0, 1)
@@ -130,7 +146,7 @@ class GuidedDialog(QWidget):
         self.groupbox_image2.setLayout(gb_img2_layout)
         self.groupbox_image2.setVisible(False)
 
-        self.groupbox_image3 = QGroupBox("Back camera image 1")
+        self.groupbox_image3 = QGroupBox("Image 1 (camera back)")
         gb_img3_layout = QGridLayout()
         gb_img3_layout.addWidget(label_prompt_image3, 0, 0)
         gb_img3_layout.addWidget(self.combobox_image3, 0, 1)
@@ -140,7 +156,7 @@ class GuidedDialog(QWidget):
         self.groupbox_image3.setLayout(gb_img3_layout)
         self.groupbox_image3.setVisible(False)
 
-        self.groupbox_image4 = QGroupBox("Back camera image 2")
+        self.groupbox_image4 = QGroupBox("Image 2 (camera back)")
         gb_img4_layout = QGridLayout()
         gb_img4_layout.addWidget(label_prompt_image4, 0, 0)
         gb_img4_layout.addWidget(self.combobox_image4, 0, 1)
@@ -238,18 +254,26 @@ class GuidedDialog(QWidget):
         amount = self.params["amount"]
         if method == "detection" and amount == 4:
             self.fill_layer_combobox(self.combobox_image2)
-            self.set_direction_from_reference(self.label_display_direction2, self.params["direction1"])
-            self.set_direction_from_reference(self.combobox_direction3, self.params["direction1"])
+            self.set_direction_from_reference(
+                self.label_display_direction2, self.params["direction1"]
+            )
+            self.set_direction_from_reference(
+                self.combobox_direction3, self.params["direction1"]
+            )
             self.groupbox_image2.setVisible(True)
             self.button_confirm_v2.setVisible(True)
         elif method == "illumination":
             self.fill_layer_combobox(self.combobox_image2)
-            self.set_direction_from_reference(self.label_display_direction2, self.params["direction1"])
+            self.set_direction_from_reference(
+                self.label_display_direction2, self.params["direction1"]
+            )
             self.groupbox_image2.setVisible(True)
             self.button_apply_v2.setVisible(True)
         else:
             self.fill_layer_combobox(self.combobox_image3)
-            self.set_direction_from_reference(self.label_display_direction3, self.params["direction1"])
+            self.set_direction_from_reference(
+                self.label_display_direction3, self.params["direction1"]
+            )
             self.groupbox_image3.setVisible(True)
             self.button_apply_d1.setVisible(True)
         self.adjustSize()
@@ -262,7 +286,9 @@ class GuidedDialog(QWidget):
         self.groupbox_image2.setVisible(False)
         self.button_confirm_v2.setVisible(False)
         self.fill_layer_combobox(self.combobox_image3)
-        self.set_direction_from_reference(self.label_display_direction3, self.params["direction2"])
+        self.set_direction_from_reference(
+            self.label_display_direction3, self.params["direction2"]
+        )
         self.groupbox_image3.setVisible(True)
         self.button_confirm_d1.setVisible(True)
         self.adjustSize()
@@ -275,7 +301,9 @@ class GuidedDialog(QWidget):
         self.groupbox_image3.setVisible(False)
         self.button_confirm_d1.setVisible(False)
         self.fill_layer_combobox(self.combobox_image4)
-        self.set_direction_from_reference(self.label_display_direction4, self.params["direction3"])
+        self.set_direction_from_reference(
+            self.label_display_direction4, self.params["direction3"]
+        )
         self.groupbox_image4.setVisible(True)
         self.button_apply_d2.setVisible(True)
         self.adjustSize()
@@ -309,7 +337,11 @@ class GuidedDialog(QWidget):
 
     def fill_layer_combobox(self, combobox):
         combobox.clear()
-        chosen_layers = [value for key, value in self.params.items() if key.startswith('layer')]
+        chosen_layers = [
+            value
+            for key, value in self.params.items()
+            if key.startswith("layer")
+        ]
         for layer in self.viewer.layers:
             if layer.name not in chosen_layers:
                 combobox.addItem(layer.name)
