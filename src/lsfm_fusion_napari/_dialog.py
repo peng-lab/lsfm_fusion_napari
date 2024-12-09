@@ -55,7 +55,7 @@ class GuidedDialog(QWidget):
             "Select the first image from camera back:"
         )
         label_prompt_image4 = QLabel(
-            "Select the second image from caemra back:"
+            "Select the second image from camera back:"
         )
         label_direction1 = QLabel("Direction:")
         label_direction2 = QLabel("Direction:")
