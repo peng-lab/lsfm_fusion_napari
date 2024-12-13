@@ -16,14 +16,217 @@ from qtpy.QtWidgets import (
     QScrollArea,
     QDialog,
     QFileDialog,
+    QSizePolicy,
+    QSlider,
 )
 from qtpy.QtCore import Qt
 
 import napari
-from FUSE import FUSE_illu, FUSE_det
+from lsfm_fuse import FUSE_illu, FUSE_det
 
 from ._dialog import GuidedDialog
 from ._writer import save_dialog, write_tiff
+
+
+class RegistrationSetting(QGroupBox):
+    # (15.11.2024) Function 1
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTitle("Registration settings")
+        self.setVisible(False)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.setStyleSheet(
+            "QGroupBox {background-color: blue; " "border-radius: 10px}"
+        )
+        self.viewer = parent.viewer
+        self.parent = parent
+        self.name = ""  # layer.name
+
+        # layout and parameters for intensity normalization
+        vbox = QGridLayout()
+        self.setLayout(vbox)
+
+        self.checkbox_exist_reg = QCheckBox(checked=False)
+        vbox.addWidget(QLabel("Use existing reg. matrix:"), 0, 0, 1, 1)
+        vbox.addWidget(self.checkbox_exist_reg, 0, 1)
+
+        self.checkbox_require_reg_finetune = QCheckBox(checked=True)
+        vbox.addWidget(QLabel("Skip reg. finetune:"), 1, 0, 1, 1)
+        vbox.addWidget(self.checkbox_require_reg_finetune, 1, 1)
+
+        self.label_lateral_downsample = QLabel("Lateral dowsample: 2")
+        vbox.addWidget(self.label_lateral_downsample, 2, 0, 1, 1)
+        sld_lateral_downsample = QSlider(Qt.Horizontal)
+        sld_lateral_downsample.setRange(1, 5)
+        sld_lateral_downsample.setValue(2)
+        self.lineedit_lateral_downsample = 2
+        sld_lateral_downsample.valueChanged.connect(self.lateral_downsample)
+        vbox.addWidget(sld_lateral_downsample, 2, 1, 1, 2)
+
+        self.label_axial_downsample = QLabel("Axial dowsample: 1")
+        vbox.addWidget(self.label_axial_downsample, 3, 0, 1, 1)
+        sld_axial_downsample = QSlider(Qt.Horizontal)
+        sld_axial_downsample.setRange(1, 5)
+        sld_axial_downsample.setValue(1)
+        self.lineedit_axial_downsample = 1
+        sld_axial_downsample.valueChanged.connect(self.axial_downsample)
+        vbox.addWidget(sld_axial_downsample, 3, 1, 1, 2)
+
+    def lateral_downsample(self, value: int):
+        self.lineedit_lateral_downsample = value
+        self.label_lateral_downsample.setText(
+            "lateral downsample: {}".format(value)
+        )
+
+    def axial_downsample(self, value: int):
+        self.lineedit_axial_downsample = value
+        self.label_axial_downsample.setText(
+            "Axial downsample: {}".format(value)
+        )
+
+
+class GeneralSetting(QGroupBox):
+    # (15.11.2024) Function 1
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTitle("General settings")
+        self.setVisible(False)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.setStyleSheet(
+            "QGroupBox {background-color: blue; " "border-radius: 10px}"
+        )
+        self.viewer = parent.viewer
+        self.parent = parent
+        self.name = ""  # layer.name
+
+        # layout and parameters for intensity normalization
+        vbox = QGridLayout()
+        self.setLayout(vbox)
+
+        self.checkbox_sparse = QCheckBox(checked=False)
+        vbox.addWidget(QLabel("Sparse sample:"), 0, 0, 1, 2)
+        vbox.addWidget(self.checkbox_sparse, 0, 1)
+
+        self.checkbox_req_segmentation = QCheckBox(checked=True)
+        vbox.addWidget(QLabel("Require segmentation:"), 1, 0, 1, 2)
+        vbox.addWidget(self.checkbox_req_segmentation, 1, 1)
+
+        self.label_lateral_downsample = QLabel("Lateral dowsample: 1")
+        vbox.addWidget(self.label_lateral_downsample, 2, 0, 1, 1)
+        sld_lateral_downsample = QSlider(Qt.Horizontal)
+        sld_lateral_downsample.setRange(1, 5)
+        sld_lateral_downsample.setValue(1)
+        self.lineedit_lateral_downsample = 1
+        sld_lateral_downsample.valueChanged.connect(self.lateral_downsample)
+        vbox.addWidget(sld_lateral_downsample, 2, 1, 1, 2)
+
+        self.label_axial_downsample = QLabel("Axial dowsample: 1")
+        vbox.addWidget(self.label_axial_downsample, 3, 0, 1, 1)
+        sld_axial_downsample = QSlider(Qt.Horizontal)
+        sld_axial_downsample.setRange(1, 5)
+        sld_axial_downsample.setValue(1)
+        self.lineedit_axial_downsample = 1
+        sld_axial_downsample.valueChanged.connect(self.axial_downsample)
+        vbox.addWidget(sld_axial_downsample, 3, 1, 1, 2)
+
+        self.label_resample_ratio = QLabel("Downsample in smoothing: 2")
+        vbox.addWidget(self.label_resample_ratio, 4, 0, 1, 2)
+        sld_resample_ratio = QSlider(Qt.Horizontal)
+        sld_resample_ratio.setRange(1, 5)
+        sld_resample_ratio.setValue(2)
+        self.lineedit_resample_ratio = 2
+        self.lineedit_resample_ratio = 2
+        sld_resample_ratio.valueChanged.connect(self.resample_ratio)
+        vbox.addWidget(sld_resample_ratio, 4, 1, 1, 2)
+
+        self.label_n_epochs = QLabel("Iteration of smoothing: 50")
+        vbox.addWidget(self.label_n_epochs, 5, 0, 1, 2)
+        sld_n_epochs = QSlider(Qt.Horizontal)
+        sld_n_epochs.setRange(10, 300)
+        sld_n_epochs.setValue(50)
+        self.lineedit_n_epochs = 50
+        sld_n_epochs.valueChanged.connect(self.n_epochs)
+        vbox.addWidget(sld_n_epochs, 5, 1, 1, 2)
+
+        vbox.addWidget(QLabel("Smoothing kernel size: "), 6, 0, 2, 1)
+        self.label_kernel_size_z = QLabel("z: 5")
+        vbox.addWidget(self.label_kernel_size_z, 6, 1, 1, 1)
+        sld_kernel_size_z = QSlider(Qt.Horizontal)
+        sld_kernel_size_z.setRange(1, 49)
+        sld_kernel_size_z.setPageStep(2)
+        sld_kernel_size_z.setValue(5)
+        self.lineedit_window_size_z = 5
+        sld_kernel_size_z.valueChanged.connect(self.kernel_size_z)
+        vbox.addWidget(sld_kernel_size_z, 6, 2, 1, 1)
+        self.label_kernel_size_xy = QLabel("xy: 59")
+        vbox.addWidget(self.label_kernel_size_xy, 7, 1, 1, 1)
+        sld_kernel_size_xy = QSlider(Qt.Horizontal)
+        sld_kernel_size_xy.setRange(9, 199)
+        sld_kernel_size_xy.setPageStep(2)
+        sld_kernel_size_xy.setValue(59)
+        self.lineedit_window_size_xy = 59
+        sld_kernel_size_xy.valueChanged.connect(self.kernel_size_xy)
+        vbox.addWidget(sld_kernel_size_xy, 7, 2, 1, 1)
+
+        vbox.addWidget(QLabel("Polynomial order in smoothing: "), 8, 0, 2, 1)
+        self.label_porder_z = QLabel("z: 2")
+        vbox.addWidget(self.label_porder_z, 8, 1, 1, 1)
+        sld_porder_z = QSlider(Qt.Horizontal)
+        sld_porder_z.setRange(1, 5)
+        sld_porder_z.setPageStep(1)
+        sld_porder_z.setValue(2)
+        self.lineedit_porder_z = 2
+        sld_porder_z.valueChanged.connect(self.porder_z)
+        vbox.addWidget(sld_porder_z, 8, 2, 1, 1)
+        self.label_porder_xy = QLabel("xy: 2")
+        vbox.addWidget(self.label_porder_xy, 9, 1, 1, 1)
+        sld_porder_xy = QSlider(Qt.Horizontal)
+        sld_porder_xy.setRange(1, 5)
+        sld_porder_xy.setPageStep(1)
+        sld_porder_xy.setValue(2)
+        self.lineedit_porder_xy = 2
+        sld_porder_xy.valueChanged.connect(self.porder_xy)
+        vbox.addWidget(sld_porder_xy, 9, 2, 1, 1)
+
+        self.checkbox_save_separate_results = QCheckBox(checked=False)
+        vbox.addWidget(QLabel("Save separate results:"), 10, 0, 1, 2)
+        vbox.addWidget(self.checkbox_save_separate_results, 10, 1)
+
+    def porder_xy(self, value: int):
+        self.lineedit_porder_xy = value
+        self.label_porder_xy.setText("xy: {}".format(value))
+
+    def porder_z(self, value: int):
+        self.lineedit_porder_z = value
+        self.label_porder_z.setText("z: {}".format(value))
+
+    def kernel_size_xy(self, value: int):
+        self.lineedit_window_size_xy = value
+        self.label_kernel_size_xy.setText("xy: {}".format(value))
+
+    def kernel_size_z(self, value: int):
+        self.lineedit_window_size_z = value
+        self.label_kernel_size_z.setText("z: {}".format(value))
+
+    def resample_ratio(self, value: int):
+        self.lineedit_resample_ratio = value
+        self.label_resample_ratio.setText("Resample ratio: {}".format(value))
+
+    def n_epochs(self, value: int):
+        self.lineedit_n_epochs = value
+        self.label_n_epochs.setText("Maximum iteration: {}".format(value))
+
+    def lateral_downsample(self, value: int):
+        self.lineedit_lateral_downsample = value
+        self.label_lateral_downsample.setText(
+            "lateral downsample: {}".format(value)
+        )
+
+    def axial_downsample(self, value: int):
+        self.lineedit_axial_downsample = value
+        self.label_axial_downsample.setText(
+            "Axial downsample: {}".format(value)
+        )
 
 
 class FusionWidget(QWidget):
@@ -36,6 +239,9 @@ class FusionWidget(QWidget):
         self._initialize_logger()
 
         self.logger.debug("Initializing FusionWidget")
+
+        self.init_ready = False
+        self.layer_names = []
 
         self.guided_dialog = GuidedDialog(self)
         self.image_config_is_valid = False
@@ -75,12 +281,18 @@ class FusionWidget(QWidget):
                 self, func, event
             )
 
-        self.viewer.layers.events.removed.connect(self._mark_invalid_layer_label)
+        self.viewer.layers.events.removed.connect(
+            self._mark_invalid_layer_label
+        )
+
         def connect_rename(event):
             event.value.events.name.connect(self._update_layer_label)
+
         self.viewer.layers.events.inserted.connect(connect_rename)
+
         def write_old_name_to_metadata(event):
             event.value.metadata["old_name"] = event.value.name
+
         self.viewer.layers.events.inserted.connect(write_old_name_to_metadata)
         for layer in self.viewer.layers:
             layer.metadata["old_name"] = layer.name
@@ -122,7 +334,7 @@ class FusionWidget(QWidget):
         self.label_illumination2 = QLabel("illumination 2:")
         self.label_illumination3 = QLabel("illumination 3:")
         self.label_illumination4 = QLabel("illumination 4:")
-        self.label_illu1 = QLabel() # TODO: handle long layer names
+        self.label_illu1 = QLabel()  # TODO: handle long layer names
         self.label_illu2 = QLabel()
         self.label_illu3 = QLabel()
         self.label_illu4 = QLabel()
@@ -134,11 +346,8 @@ class FusionWidget(QWidget):
         self.label_selected_direction2 = QLabel()
         self.label_selected_direction3 = QLabel()
         self.label_selected_direction4 = QLabel()
-        label_resample_ratio = QLabel("Resample ratio:")
-        label_window_size = QLabel("Window size:")
-        label_gf_kernel_size = QLabel("GF kernel size:")
-        label_req_segmentation = QLabel("Require segmentation:")
         label_req_registration = QLabel("Require registration:")
+        label_cam_pos = QLabel("Camera position:")
         self.label_lateral_resolution = QLabel("Lateral resolution:")
         self.label_lateral_resolution.setVisible(False)
         self.label_axial_resolution = QLabel("Axial resolution:")
@@ -148,9 +357,12 @@ class FusionWidget(QWidget):
         label_keep_tmp = QLabel("Keep temporary files:")
         path = Path(__file__).parent.parent.parent / "intermediates"
         os.makedirs(path, exist_ok=True)
-        self.label_tmp_path = QLabel(str(path))
+        self.label_tmp_path = QLabel("Temp path: {}".format(str(path)))
         self.label_tmp_path.setWordWrap(True)
         self.label_tmp_path.setMaximumWidth(350)
+        self.label_tmp_path.setFixedSize(350, 50)
+        self.general_settings = GeneralSetting(self)
+        self.registration_settings = RegistrationSetting(self)
 
         # QPushButtons
         btn_input = QPushButton("Input")
@@ -164,7 +376,6 @@ class FusionWidget(QWidget):
         btn_save.clicked.connect(self._save_on_click)
 
         # QCheckBoxes
-        self.checkbox_req_segmentation = QCheckBox()
         self.checkbox_req_registration = QCheckBox()
         self.checkbox_req_registration.stateChanged.connect(
             self._toggle_registration
@@ -174,21 +385,20 @@ class FusionWidget(QWidget):
         self.checkbox_keep_tmp = QCheckBox()
 
         # QLineEdits
-        self.lineedit_resample_ratio = QLineEdit()
-        self.lineedit_window_size_Y = QLineEdit()
-        self.lineedit_window_size_X = QLineEdit()
-        self.lineedit_gf_kernel_size = QLineEdit()
         self.lineedit_lateral_resolution = QLineEdit()
         self.lineedit_lateral_resolution.setVisible(False)
         self.lineedit_axial_resolution = QLineEdit()
         self.lineedit_axial_resolution.setVisible(False)
 
-        self.lineedit_resample_ratio.setText("2")
-        self.lineedit_window_size_Y.setText("59")
-        self.lineedit_window_size_X.setText("5")
-        self.lineedit_gf_kernel_size.setText("49")
         self.lineedit_lateral_resolution.setText("1")
         self.lineedit_axial_resolution.setText("1")
+
+        # Qcombobox
+        self.combobox_cam_pos = QComboBox()
+        self.combobox_cam_pos.addItem("front")
+        self.combobox_cam_pos.addItem("back")
+        self.cam_pos = "front"
+        self.combobox_cam_pos.currentIndexChanged.connect(self.pos_changed)
 
         self.input_box = QGroupBox("Input")
         input_layout = QGridLayout()
@@ -215,15 +425,6 @@ class FusionWidget(QWidget):
 
         parameters = QGroupBox("Parameters")
         parameters_layout = QGridLayout()
-        parameters_layout.addWidget(label_resample_ratio, 0, 0, 1, 2)
-        parameters_layout.addWidget(self.lineedit_resample_ratio, 0, 2)
-        parameters_layout.addWidget(label_window_size, 1, 0)
-        parameters_layout.addWidget(self.lineedit_window_size_Y, 1, 1)
-        parameters_layout.addWidget(self.lineedit_window_size_X, 1, 2)
-        parameters_layout.addWidget(label_gf_kernel_size, 2, 0, 1, 2)
-        parameters_layout.addWidget(self.lineedit_gf_kernel_size, 2, 2)
-        parameters_layout.addWidget(label_req_segmentation, 3, 0, 1, 2)
-        parameters_layout.addWidget(self.checkbox_req_segmentation, 3, 2)
         parameters_layout.addWidget(label_req_registration, 4, 0, 1, 2)
         parameters_layout.addWidget(self.checkbox_req_registration, 4, 2)
         parameters_layout.addWidget(self.label_lateral_resolution, 5, 0, 1, 2)
@@ -236,7 +437,28 @@ class FusionWidget(QWidget):
         parameters_layout.addWidget(self.checkbox_req_flip_det, 8, 2)
         parameters_layout.addWidget(label_keep_tmp, 9, 0, 1, 2)
         parameters_layout.addWidget(self.checkbox_keep_tmp, 9, 2)
+        parameters_layout.addWidget(label_cam_pos, 10, 0)
+        parameters_layout.addWidget(self.combobox_cam_pos, 10, 2)
         parameters.setLayout(parameters_layout)
+
+        advanced_parameters = QGroupBox("Advanced parameters")
+        advanced_parameters_layout = QGridLayout()
+        advanced_parameters.setLayout(advanced_parameters_layout)
+
+        # Button intensity normalization
+        self.btn_general_settings = QPushButton("General settings")
+        self.btn_general_settings.setCheckable(True)
+        self.btn_general_settings.clicked.connect(self.toggle_general_settings)
+        advanced_parameters_layout.addWidget(self.btn_general_settings)
+        advanced_parameters_layout.addWidget(self.general_settings)
+
+        self.btn_registration_settings = QPushButton("Registration settings")
+        self.btn_registration_settings.setCheckable(True)
+        self.btn_registration_settings.clicked.connect(
+            self.toggle_registration_settings
+        )
+        advanced_parameters_layout.addWidget(self.btn_registration_settings)
+        advanced_parameters_layout.addWidget(self.registration_settings)
 
         ### Layout
         layout = QGridLayout()
@@ -247,11 +469,13 @@ class FusionWidget(QWidget):
         # layout.addWidget(input1, 1, 0, 1, -1)
         # layout.addWidget(input2, 2, 0, 1, -1)
         layout.addWidget(parameters, 3, 0, 1, -1)
-        layout.addWidget(self.label_tmp_path, 4, 0, 1, -1)
-        layout.addWidget(btn_process, 5, 0)
-        layout.addWidget(btn_save, 5, 1)
+        layout.addWidget(advanced_parameters, 4, 0, 1, -1)
+        layout.addWidget(self.label_tmp_path, 5, 0, 1, -1)
+        layout.addWidget(btn_process, 6, 0)
+        layout.addWidget(btn_save, 6, 1)
 
         widget = QWidget()
+        layout.setAlignment(Qt.AlignTop)
         widget.setLayout(layout)
 
         scroll_area = QScrollArea()
@@ -261,6 +485,48 @@ class FusionWidget(QWidget):
         self.setLayout(QVBoxLayout())
         self.layout().addWidget(scroll_area)
         self.setMinimumWidth(330)
+
+    def pos_changed(self, index: int):
+        # (27.11.2024)
+        if index == 0:
+            self.cam_pos = "front"
+        else:
+            self.cam_pos = "back"
+
+    def toggle_general_settings(self, checked: bool):
+        # Switching the visibility of the General settings
+        if self.general_settings.isVisible():
+            self.general_settings.setVisible(False)
+            self.btn_general_settings.setText("General settings")
+        else:
+            self.general_settings.setVisible(True)
+            self.btn_general_settings.setText("Hide general settings")
+
+    def toggle_registration_settings(self, checked: bool):
+        # Switching the visibility of the General settings
+        if self.registration_settings.isVisible():
+            self.registration_settings.setVisible(False)
+            self.btn_registration_settings.setText("Registration settings")
+        else:
+            self.registration_settings.setVisible(True)
+            self.btn_registration_settings.setText(
+                "Hide registration settings"
+            )
+
+    def find_layers(self, event: napari.utils.events.event.Event):
+        # (19.11.2024)
+        lst = []
+        for layer in self.viewer.layers:
+            name = layer.name
+            lst.append(name)
+        self.layer_names = lst
+
+        if self.init_ready:
+            self.general_settings.cbx_image.clear()
+            self.general_settings.cbx_image.addItems(lst)
+        if self.init_ready:
+            self.registration_settings.cbx_image.clear()
+            self.registration_settings.cbx_image.addItems(lst)
 
     def _update_layer_label(self, event):
         new_name = event.source.name
@@ -275,7 +541,9 @@ class FusionWidget(QWidget):
         for label in labels:
             if label.text() == old_name:
                 label.setText(new_name)
-                self.logger.debug(f"Layer name updated: {old_name} -> {new_name}")
+                self.logger.debug(
+                    f"Layer name updated: {old_name} -> {new_name}"
+                )
                 break
 
     def _mark_invalid_layer_label(self, event):
@@ -295,7 +563,7 @@ class FusionWidget(QWidget):
 
     def get_path(self):
         path = QFileDialog.getExistingDirectory(self, "Select Directory")
-        self.label_tmp_path.setText(path)
+        self.label_tmp_path.setText("Temp path: {}".format(path))
 
     def _toggle_registration(self, event):
         if event == Qt.Checked:
@@ -328,7 +596,7 @@ class FusionWidget(QWidget):
         self.label_illu2.setStyleSheet("")
         self.label_illu3.setStyleSheet("")
         self.label_illu4.setStyleSheet("")
-        
+
         self.label_illu1.setText(params["layer1"])
         self.label_selected_direction1.setText(params["direction1"])
 
@@ -340,21 +608,21 @@ class FusionWidget(QWidget):
             self._set_input_visible(3, True)
             if params["amount"] == 2:
                 # detection with 2 images
-                self._set_input_visible([2,4], False)
+                self._set_input_visible([2, 4], False)
             else:
                 # detection with 4 images
                 self.label_illu2.setText(params["layer2"])
                 self.label_selected_direction2.setText(params["direction2"])
                 self.label_illu4.setText(params["layer4"])
                 self.label_selected_direction4.setText(params["direction4"])
-                self._set_input_visible([2,4], True)
+                self._set_input_visible([2, 4], True)
         else:
             # illumination (2 images)
             self.amount.setVisible(False)
             self.label_illu2.setText(params["layer2"])
             self.label_selected_direction2.setText(params["direction2"])
             self._set_input_visible(2, True)
-            self._set_input_visible([3,4], False)
+            self._set_input_visible([3, 4], False)
 
         self.image_config_is_valid = True
         self.input_box.setVisible(True)
@@ -397,29 +665,31 @@ class FusionWidget(QWidget):
         params = self._get_parameters()
         if params is None:
             return
-        exclude_keys = {'image1', 'image2', 'image3', 'image4'}
+        exclude_keys = {"image1", "image2", "image3", "image4"}
 
-        filtered_dict = {k: v for k, v in params.items() if k not in exclude_keys}
+        filtered_dict = {
+            k: v for k, v in params.items() if k not in exclude_keys
+        }
         self.logger.debug(filtered_dict)
-        
+
         if params["method"] == "illumination":
-            model = FUSE_illu()
+            model = FUSE_illu(**params["illu_init_params"])
         else:
-            model = FUSE_det()
+            model = FUSE_det(**params["det_init_params"])
 
         output_image = model.train_from_params(params)
-        self.viewer.add_image(output_image) # set name of layer
+        self.viewer.add_image(output_image)  # set name of layer
 
     def _get_parameters(self):
         self.logger.debug("Compiling parameters")
         if not self.input_box.isVisible():
             self.logger.error("Input not set")
             return None
-        
+
         if not self.image_config_is_valid:
             self.logger.error("Invalid image configuration")
             return None
-        
+
         params = {}
 
         method = self.method.text()
@@ -447,38 +717,20 @@ class FusionWidget(QWidget):
                 params["image4"] = self.viewer.layers[image4_name].data
                 params["direction4"] = self.label_selected_direction4.text()
 
-        try:
-            params["resample_ratio"] = int(self.lineedit_resample_ratio.text())
-        except ValueError:
-            self.logger.error("Invalid resample ratio")
-            return
-        if not (1 <= params["resample_ratio"] <= 5):
-            self.logger.error("Resample ratio must be between 1 and 5")
-            return
-        try:
-            params["window_size"] = (
-                int(self.lineedit_window_size_Y.text()),
-                int(self.lineedit_window_size_X.text()),
-            )
-        except ValueError:
-            self.logger.error("Invalid window size")
-            return
-        if not (
-            9 <= params["window_size"][0] <= 89
-            and 3 <= params["window_size"][1] <= 29
-        ):
-            self.logger.error("Window size must be between 3x9 and 29x89")
-            return
-        try:
-            params["GF_kernel_size"] = int(self.lineedit_gf_kernel_size.text())
-        except ValueError:
-            self.logger.error("Invalid GF kernel size")
-            return
-        if not (29 <= params["GF_kernel_size"] <= 89):
-            self.logger.error("GF kernel size must be between 29 and 89")
-            return
+        params["resample_ratio"] = (
+            self.general_settings.lineedit_resample_ratio
+        )
+        params["window_size"] = [
+            self.general_settings.lineedit_window_size_z,
+            self.general_settings.lineedit_window_size_xy,
+        ]
+        params["poly_order"] = [
+            self.general_settings.lineedit_porder_z,
+            self.general_settings.lineedit_porder_xy,
+        ]
+        params["n_epochs"] = self.general_settings.lineedit_n_epochs
         params["require_segmentation"] = (
-            self.checkbox_req_segmentation.isChecked()
+            self.general_settings.checkbox_req_segmentation.isChecked()
         )
         params["require_registration"] = (
             self.checkbox_req_registration.isChecked()
@@ -501,8 +753,54 @@ class FusionWidget(QWidget):
         params["require_flip_illu"] = self.checkbox_req_flip_illu.isChecked()
         params["require_flip_det"] = self.checkbox_req_flip_det.isChecked()
         params["keep_intermediates"] = self.checkbox_keep_tmp.isChecked()
-        params["tmp_path"] = self.label_tmp_path.text()
+        params["sparse_sample"] = (
+            self.general_settings.checkbox_sparse.isChecked()
+        )
+        params["save_separate_results"] = (
+            self.general_settings.checkbox_save_separate_results.isChecked()
+        )
+        params["xy_downsample_ratio"] = (
+            self.general_settings.lineedit_lateral_downsample
+        )
+        params["z_downsample_ratio"] = (
+            self.general_settings.lineedit_axial_downsample
+        )
+        params["tmp_path"] = self.label_tmp_path.text()[11:]
+        params["registration_params"] = {
+            "use_exist_reg": self.registration_settings.checkbox_exist_reg.isChecked(),
+            "require_reg_finetune": self.registration_settings.checkbox_require_reg_finetune.isChecked(),
+            "axial_downsample": self.registration_settings.lineedit_axial_downsample,
+            "lateral_downsample": self.registration_settings.lineedit_lateral_downsample,
+        }
+        params["cam_pos"] = self.cam_pos
         self.logger.debug(f"Parameters: {params.keys()}")
+        illu_init_keys = [
+            "resample_ratio",
+            "window_size",
+            "poly_order",
+            "n_epochs",
+            "require_segmentation",
+        ]
+        det_init_keys = [
+            "resample_ratio",
+            "window_size",
+            "poly_order",
+            "n_epochs",
+            "require_segmentation",
+            "registration_params",
+        ]
+        illu_init_params = {}
+        det_init_params = {}
+
+        for key, item in params.items():
+            if key in illu_init_keys:
+                illu_init_params[key] = item
+            if key in det_init_keys:
+                det_init_params[key] = item
+
+        params["illu_init_params"] = illu_init_params
+        params["det_init_params"] = det_init_params
+
         return params
 
 
