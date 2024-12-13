@@ -1,5 +1,5 @@
 [project]
-name = "LSFM-fusion-napari"
+name = "lsfm_fusion_napari"
 dynamic = ["version"]
 description = "A simple plugin to fuse LSFM images"
 readme = "README.md"
@@ -41,13 +41,13 @@ testing = [
 ]
 
 [project.entry-points."napari.manifest"]
-LSFM-fusion-napari = "lsfm_fusion_napari:napari.yaml"
+lsfm_fusion_napari = "lsfm_fusion_napari:napari.yaml"
 
 [project.urls]
-"Bug Tracker" = "https://github.com/peng-lab/LSFM-fusion-napari/issues"
-"Documentation" = "https://github.com/peng-lab/LSFM-fusion-napari#README.md"
-"Source Code" = "https://github.com/peng-lab/LSFM-fusion-napari"
-"User Support" = "https://github.com/peng-lab/LSFM-fusion-napari/issues"
+"Bug Tracker" = "https://github.com/peng-lab/lsfm_fusion_napari/issues"
+"Documentation" = "https://github.com/peng-lab/lsfm_fusion_napari#README.md"
+"Source Code" = "https://github.com/peng-lab/lsfm_fusion_napari"
+"User Support" = "https://github.com/peng-lab/lsfm_fusion_napari/issues"
 
 [build-system]
 requires = ["setuptools>=42.0.0", "wheel"]
