@@ -28,7 +28,7 @@ dependencies = [
     "numpy",
     "qtpy",
     "aicsimageio",
-    "FUSE",
+    "lsfm_fuse",
 ]
 
 [project.optional-dependencies]
