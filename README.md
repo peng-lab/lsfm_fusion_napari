@@ -1,4 +1,4 @@
-# LSFM-fusion-napari
+# lsfm_fusion_napari
 
 [![License BSD-3](https://img.shields.io/pypi/l/LSFM-fusion-napari.svg?color=green)](https://github.com/peng-lab/LSFM-fusion-napari/raw/main/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/LSFM-fusion-napari.svg?color=green)](https://pypi.org/project/LSFM-fusion-napari)
@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/peng-lab/LSFM-fusion-napari/branch/main/graph/badge.svg)](https://codecov.io/gh/peng-lab/LSFM-fusion-napari)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/LSFM-fusion-napari)](https://napari-hub.org/plugins/LSFM-fusion-napari)
 
-A simple plugin to use FooBar segmentation within napari
+A simple plugin to fuse LSFM images
 
 ----------------------------------
 
