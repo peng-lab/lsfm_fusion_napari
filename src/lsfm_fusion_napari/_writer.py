@@ -6,11 +6,13 @@ see: https://napari.org/stable/plugins/guides.html?#writers
 
 Replace code below according to your needs.
 """
+
 from __future__ import annotations
 
 import numpy as np
 from aicsimageio.writers import OmeTiffWriter
 from qtpy.QtWidgets import QFileDialog
+
 
 def save_dialog(parent):
     """

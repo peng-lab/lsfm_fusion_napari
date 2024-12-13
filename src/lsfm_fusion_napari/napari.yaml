@@ -1,7 +1,5 @@
-name: LSFM-fusion-napari
-display_name: LSFM Fusion
-# use 'hidden' to remove plugin from napari hub search results
-visibility: public
+name: lsfm-fusion-napari
+display_name: Leonardo-fusion
 # see https://napari.org/stable/plugins/manifest.html for valid categories
 categories: ["Annotation", "Segmentation", "Acquisition"]
 contributions:
