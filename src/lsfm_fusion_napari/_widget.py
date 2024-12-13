@@ -347,7 +347,7 @@ class FusionWidget(QWidget):
         self.label_selected_direction3 = QLabel()
         self.label_selected_direction4 = QLabel()
         label_req_registration = QLabel("Require registration:")
-        label_cam_pos = QLabel("Camera position:")
+        label_cam_pos = QLabel("Camera position (for fuse_illu):")
         self.label_lateral_resolution = QLabel("Lateral resolution:")
         self.label_lateral_resolution.setVisible(False)
         self.label_axial_resolution = QLabel("Axial resolution:")
