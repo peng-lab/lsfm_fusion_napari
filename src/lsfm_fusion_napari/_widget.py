@@ -27,6 +27,12 @@ from lsfm_fuse import FUSE_illu, FUSE_det
 from ._dialog import GuidedDialog
 from ._writer import save_dialog, write_tiff
 
+from PyQt5 import QtGui
+
+font = QtGui.QFont()
+font.setFamily("Microsoft YaHei UI")
+font.setPointSize(20)
+
 
 class RegistrationSetting(QGroupBox):
     # (15.11.2024) Function 1
@@ -35,9 +41,7 @@ class RegistrationSetting(QGroupBox):
         self.setTitle("Registration settings")
         self.setVisible(False)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
-        self.setStyleSheet(
-            "QGroupBox {background-color: blue; " "border-radius: 10px}"
-        )
+        self.setStyleSheet("QGroupBox { " "border-radius: 10px}")
         self.viewer = parent.viewer
         self.parent = parent
         self.name = ""  # layer.name
@@ -92,9 +96,7 @@ class GeneralSetting(QGroupBox):
         self.setTitle("General settings")
         self.setVisible(False)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
-        self.setStyleSheet(
-            "QGroupBox {background-color: blue; " "border-radius: 10px}"
-        )
+        self.setStyleSheet("QGroupBox {" "border-radius: 10px}")
         self.viewer = parent.viewer
         self.parent = parent
         self.name = ""  # layer.name
@@ -139,7 +141,7 @@ class GeneralSetting(QGroupBox):
         sld_resample_ratio.valueChanged.connect(self.resample_ratio)
         vbox.addWidget(sld_resample_ratio, 4, 1, 1, 2)
 
-        self.label_n_epochs = QLabel("Iteration of smoothing: 50")
+        self.label_n_epochs = QLabel("Maximum iteration: 50")
         vbox.addWidget(self.label_n_epochs, 5, 0, 1, 2)
         sld_n_epochs = QSlider(Qt.Horizontal)
         sld_n_epochs.setRange(10, 300)
@@ -152,18 +154,16 @@ class GeneralSetting(QGroupBox):
         self.label_kernel_size_z = QLabel("z: 5")
         vbox.addWidget(self.label_kernel_size_z, 6, 1, 1, 1)
         sld_kernel_size_z = QSlider(Qt.Horizontal)
-        sld_kernel_size_z.setRange(1, 49)
-        sld_kernel_size_z.setPageStep(2)
-        sld_kernel_size_z.setValue(5)
+        sld_kernel_size_z.setRange(0, 24)
+        sld_kernel_size_z.setValue(2)
         self.lineedit_window_size_z = 5
         sld_kernel_size_z.valueChanged.connect(self.kernel_size_z)
         vbox.addWidget(sld_kernel_size_z, 6, 2, 1, 1)
         self.label_kernel_size_xy = QLabel("xy: 59")
         vbox.addWidget(self.label_kernel_size_xy, 7, 1, 1, 1)
         sld_kernel_size_xy = QSlider(Qt.Horizontal)
-        sld_kernel_size_xy.setRange(9, 199)
-        sld_kernel_size_xy.setPageStep(2)
-        sld_kernel_size_xy.setValue(59)
+        sld_kernel_size_xy.setRange(0, 95)
+        sld_kernel_size_xy.setValue(25)
         self.lineedit_window_size_xy = 59
         sld_kernel_size_xy.valueChanged.connect(self.kernel_size_xy)
         vbox.addWidget(sld_kernel_size_xy, 7, 2, 1, 1)
@@ -173,7 +173,6 @@ class GeneralSetting(QGroupBox):
         vbox.addWidget(self.label_porder_z, 8, 1, 1, 1)
         sld_porder_z = QSlider(Qt.Horizontal)
         sld_porder_z.setRange(1, 5)
-        sld_porder_z.setPageStep(1)
         sld_porder_z.setValue(2)
         self.lineedit_porder_z = 2
         sld_porder_z.valueChanged.connect(self.porder_z)
@@ -182,7 +181,6 @@ class GeneralSetting(QGroupBox):
         vbox.addWidget(self.label_porder_xy, 9, 1, 1, 1)
         sld_porder_xy = QSlider(Qt.Horizontal)
         sld_porder_xy.setRange(1, 5)
-        sld_porder_xy.setPageStep(1)
         sld_porder_xy.setValue(2)
         self.lineedit_porder_xy = 2
         sld_porder_xy.valueChanged.connect(self.porder_xy)
@@ -201,12 +199,16 @@ class GeneralSetting(QGroupBox):
         self.label_porder_z.setText("z: {}".format(value))
 
     def kernel_size_xy(self, value: int):
-        self.lineedit_window_size_xy = value
-        self.label_kernel_size_xy.setText("xy: {}".format(value))
+        self.lineedit_window_size_xy = value * 2 + 9
+        self.label_kernel_size_xy.setText(
+            "xy: {}".format(self.lineedit_window_size_xy)
+        )
 
     def kernel_size_z(self, value: int):
-        self.lineedit_window_size_z = value
-        self.label_kernel_size_z.setText("z: {}".format(value))
+        self.lineedit_window_size_z = value * 2 + 1
+        self.label_kernel_size_z.setText(
+            "z: {}".format(self.lineedit_window_size_z)
+        )
 
     def resample_ratio(self, value: int):
         self.lineedit_resample_ratio = value
@@ -325,7 +327,7 @@ class FusionWidget(QWidget):
         # for ease of access
 
         # QLabels
-        title = QLabel("<h1>LSFM Fusion</h1>")
+        title = QLabel("<h1>Leonardo-Fuse</h1>")
         title.setAlignment(Qt.AlignCenter)
         title.setMaximumHeight(100)
         self.method = QLabel("")
@@ -347,7 +349,7 @@ class FusionWidget(QWidget):
         self.label_selected_direction3 = QLabel()
         self.label_selected_direction4 = QLabel()
         label_req_registration = QLabel("Require registration:")
-        label_cam_pos = QLabel("Camera position (for fuse_illu):")
+        label_cam_pos = QLabel("Camera position (for fuse along ill.):")
         self.label_lateral_resolution = QLabel("Lateral resolution:")
         self.label_lateral_resolution.setVisible(False)
         self.label_axial_resolution = QLabel("Axial resolution:")
@@ -476,6 +478,7 @@ class FusionWidget(QWidget):
 
         widget = QWidget()
         layout.setAlignment(Qt.AlignTop)
+        widget.setFont(font)
         widget.setLayout(layout)
 
         scroll_area = QScrollArea()
@@ -678,7 +681,10 @@ class FusionWidget(QWidget):
             model = FUSE_det(**params["det_init_params"])
 
         output_image = model.train_from_params(params)
-        self.viewer.add_image(output_image)  # set name of layer
+        self.viewer.add_image(
+            output_image,
+            name="fused image",
+        )  # set name of layer
 
     def _get_parameters(self):
         self.logger.debug("Compiling parameters")

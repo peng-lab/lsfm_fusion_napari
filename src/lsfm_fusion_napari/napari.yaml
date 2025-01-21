@@ -1,5 +1,5 @@
 name: lsfm_fusion_napari
-display_name: Leonardo-fusion
+display_name: Leonardo-Fuse
 # see https://napari.org/stable/plugins/manifest.html for valid categories
 categories: ["Visualization", "Image Processing"]
 contributions:
@@ -16,4 +16,4 @@ contributions:
       filename_extensions: ['.tiff']
   widgets:
     - command: lsfm_fusion_napari.make_qwidget
-      display_name: Fusion Widget
+      display_name: LSFM Fusion Widget
