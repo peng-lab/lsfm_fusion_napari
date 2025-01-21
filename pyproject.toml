@@ -28,6 +28,7 @@ dependencies = [
     "qtpy",
     "aicsimageio",
     "lsfm_fuse",
+    "napari[all]",
 ]
 
 [project.optional-dependencies]

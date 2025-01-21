@@ -9,6 +9,12 @@ from qtpy.QtWidgets import (
 )
 import napari
 
+from PyQt5 import QtGui
+
+font = QtGui.QFont()
+font.setFamily("Microsoft YaHei UI")
+font.setPointSize(20)
+
 
 class GuidedDialog(QWidget):
     def __init__(self, parent=None):
@@ -35,6 +41,7 @@ class GuidedDialog(QWidget):
         parent.logger.debug("GuidedDialog initialized")
 
     def init_ui(self):
+        self.setFont(font)
         self.setLayout(QGridLayout())
         try:
             self.setStyleSheet(napari.qt.get_stylesheet(theme="dark"))
