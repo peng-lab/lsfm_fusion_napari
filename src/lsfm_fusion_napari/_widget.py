@@ -30,7 +30,6 @@ from ._writer import save_dialog, write_tiff
 from PyQt5 import QtGui
 
 font = QtGui.QFont()
-font.setFamily("Microsoft YaHei UI")
 font.setPointSize(20)
 
 

@@ -1,4 +1,5 @@
 name: lsfm_fusion_napari
+visibility: public
 display_name: Leonardo-Fuse
 # see https://napari.org/stable/plugins/manifest.html for valid categories
 categories: ["Visualization", "Image Processing"]
