@@ -20,7 +20,7 @@ from qtpy.QtWidgets import (
 from qtpy.QtCore import Qt
 
 import napari
-from FUSE import FUSE_illu, FUSE_det
+from leonardo_toolset import FUSE_illu, FUSE_det
 
 from ._dialog import GuidedDialog
 from ._writer import save_dialog, write_tiff
