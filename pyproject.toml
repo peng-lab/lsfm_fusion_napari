@@ -27,8 +27,9 @@ requires-python = ">=3.9"
 dependencies = [
     "numpy",
     "qtpy",
-    "aicsimageio",
+    "bioio",
     "leonardo_toolset",
+    "napari[all]",
 ]
 
 [project.optional-dependencies]

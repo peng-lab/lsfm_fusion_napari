@@ -9,7 +9,7 @@ Replace code below according to your needs.
 from __future__ import annotations
 
 import numpy as np
-from aicsimageio.writers import OmeTiffWriter
+from bioio.writers import OmeTiffWriter
 from qtpy.QtWidgets import QFileDialog
 
 def save_dialog(parent):
