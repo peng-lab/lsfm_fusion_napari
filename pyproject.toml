@@ -1,7 +1,7 @@
 [project]
-name = "lsfm_fusion_napari"
-dynamic = ["version"]
-description = "A simple plugin to fuse LSFM images"
+name = "LSFM-fusion-napari"
+description = "A simple plugin to fuse microscopy images in napari"
+version = "0.0.1"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
@@ -26,8 +26,8 @@ requires-python = ">=3.9"
 dependencies = [
     "numpy",
     "qtpy",
-    "aicsimageio",
-    "lsfm_fuse",
+    "bioio",
+    "leonardo_toolset",
     "napari[all]",
 ]
 
@@ -55,17 +55,13 @@ requires = ["setuptools>=42.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-include-package-data = true
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-"*" = ["*.yaml"]
-
-
-[tool.setuptools.dynamic]
-version = {attr = "lsfm_fusion_napari.__init__.__version__"}
+lsfm_fusion_napari = ["napari.yaml"]
 
 [tool.black]
 line-length = 79
