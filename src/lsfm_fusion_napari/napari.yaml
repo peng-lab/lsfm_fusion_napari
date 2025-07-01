@@ -1,20 +1,20 @@
-name: lsfm_fusion_napari
+name: LSFM-fusion-napari
 visibility: public
 display_name: Leonardo-Fuse
 # see https://napari.org/stable/plugins/manifest.html for valid categories
 categories: ["Visualization", "Image Processing"]
 contributions:
   commands:
-    - id: lsfm_fusion_napari.write_tiff
+    - id: LSFM-fusion-napari.write_tiff
       python_name: lsfm_fusion_napari._writer:write_tiff
       title: Save image data with LSFM Fusion
-    - id: lsfm_fusion_napari.make_qwidget
+    - id: LSFM-fusion-napari.make_qwidget
       python_name: lsfm_fusion_napari:FusionWidget
       title: Make Fusion Widget
   writers:
-    - command: lsfm_fusion_napari.write_tiff
+    - command: LSFM-fusion-napari.write_tiff
       layer_types: ['image']
       filename_extensions: ['.tiff']
   widgets:
-    - command: lsfm_fusion_napari.make_qwidget
+    - command: LSFM-fusion-napari.make_qwidget
       display_name: LSFM Fusion Widget
