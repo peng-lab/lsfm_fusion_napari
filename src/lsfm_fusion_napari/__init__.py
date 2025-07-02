@@ -1,4 +1,4 @@
-__version__ = "0.1.2"
+__version__ = "0.2.0"
 from ._widget import FusionWidget
 from ._writer import write_tiff
 
